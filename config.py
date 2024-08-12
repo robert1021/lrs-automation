@@ -9,3 +9,5 @@ file_status_image_path = os.path.join(image_path, "file_status")
 folder_tab_image_path = os.path.join(image_path, "folder_tab")
 menubar_image_path = os.path.join(image_path, "menubar")
 titlebar_image_path = os.path.join(image_path, "title_bar")
+
+imu_dashboard_path = r"N:\BLSS\HC6 Health Risk Protection\HC6-101 Regulatory Reporting\SMD\NHPD Dashboard\NNHPD Dashboard - IMU.xlsx"
