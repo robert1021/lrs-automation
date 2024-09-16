@@ -7,7 +7,6 @@ from batch_import import BatchImport
 
 
 def generate(imu_path: str, pla_path: str, sla_path: str, fsrn_path: str, cta_path: str):
-
     # Compare LRS report to dashboard report
     # PLA
     pla_lrs_comparison = FileComparison(lrs_report_path=pla_path,
@@ -41,18 +40,20 @@ def generate(imu_path: str, pla_path: str, sla_path: str, fsrn_path: str, cta_pa
     if not os.path.isdir('Output'):
         os.mkdir('Output')
 
-    # Create parent files report - Files that need to be created in LRS
-    parent_files_to_create_df = pd.concat(
-        [pla_lrs_comparison.parent_files_to_create_df, sla_lrs_comparison.parent_files_to_create_df,
-         fsrn_lrs_comparison.parent_files_to_create_df, cta_lrs_comparison.parent_files_to_create_df])
+    parents_dfs = [pla_lrs_comparison.parent_files_to_create_df, sla_lrs_comparison.parent_files_to_create_df,
+                   fsrn_lrs_comparison.parent_files_to_create_df, cta_lrs_comparison.parent_files_to_create_df]
 
-    # Export parent files to create DF to excel file
-    parent_filename = f"LRS-PAR-TO-CREATE-{datetime.today().strftime('%Y-%m-%d')}.xlsx"
-    parent_files_to_create_df.to_excel(
-        fr"Output\{parent_filename}",
-        sheet_name='PAR', index=False)
+    if not all(x is None for x in parents_dfs):
+        # Create parent files report - Files that need to be created in LRS
+        parent_files_to_create_df = pd.concat(parents_dfs)
 
-    print("Parent files report created")
+        # Export parent files to create DF to excel file
+        parent_filename = f"LRS-PAR-TO-CREATE-{datetime.today().strftime('%Y-%m-%d')}.xlsx"
+        parent_files_to_create_df.to_excel(
+            fr"Output\{parent_filename}",
+            sheet_name='PAR', index=False)
+
+        print("Parent files report created")
 
     # Create batch import object
     batch_import_obj = BatchImport()
