@@ -186,11 +186,11 @@ def run_app():
 
         if tool_selection_input.lower() == LRSTools.GENERATE_BATCH_IMPORT.value.lower():
             imu_dashboard_path_input = Prompt.ask("[bold green]Enter path to the IMU Dashboard[/bold green]",
-                                                  console=console)
-            pla_path_input = Prompt.ask("[bold green]Enter path to the PLA submissions[/bold green]", console=console)
-            sla_path_input = Prompt.ask("[bold green]Enter path to the SLA submissions[/bold green]", console=console)
-            fsrn_path_input = Prompt.ask("[bold green]Enter path to the FSRN submissions[/bold green]", console=console)
-            cta_path_input = Prompt.ask("[bold green]Enter path to the CTA submissions[/bold green]", console=console)
+                                                  console=console).strip().strip('\'"')
+            pla_path_input = Prompt.ask("[bold green]Enter path to the PLA submissions[/bold green]", console=console).strip().strip('\'"')
+            sla_path_input = Prompt.ask("[bold green]Enter path to the SLA submissions[/bold green]", console=console).strip().strip('\'"')
+            fsrn_path_input = Prompt.ask("[bold green]Enter path to the FSRN submissions[/bold green]", console=console).strip().strip('\'"')
+            cta_path_input = Prompt.ask("[bold green]Enter path to the CTA submissions[/bold green]", console=console).strip().strip('\'"')
 
             results = handle_generate_batch_import(imu_dashboard_path_input, pla_path_input, sla_path_input,
                                                    fsrn_path_input,
@@ -198,13 +198,13 @@ def run_app():
 
         elif tool_selection_input.lower() == LRSTools.PARENT_FILES_RPA.value.lower():
             file_path_input = Prompt.ask(
-                "[bold green]Enter path to the file containing parent file data[/bold green]", console=console)
+                "[bold green]Enter path to the file containing parent file data[/bold green]", console=console).strip().strip('\'"')
 
             results = handle_parent_files_rpa(file_path_input)
 
         elif tool_selection_input.lower() == LRSTools.SUBMISSION_FILES_RPA.value.lower():
             file_path_input = Prompt.ask(
-                "[bold green]Enter path to the file containing submission file data[/bold green]", console=console)
+                "[bold green]Enter path to the file containing submission file data[/bold green]", console=console).strip().strip('\'"')
 
             results = handle_submission_files_rpa(file_path_input)
 
