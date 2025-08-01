@@ -24,9 +24,11 @@ def enter_lrs_parent(parent_number: str, company_name: str):
 if __name__ == '__main__':
     path = input("Enter path to excel file containing parent file data: ")
     df = pd.read_excel(path)
+    total_files = len(df)
 
     titlebar = TitleBar()
     titlebar.click_icon()
 
-    for row in df.itertuples():
+    for i, row in enumerate(df.itertuples()):
+        print(f"Entering file {i + 1} of {total_files}")
         enter_lrs_parent(str(row.lrs_par_number), str(row.company_name))
