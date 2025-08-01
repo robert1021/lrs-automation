@@ -190,7 +190,7 @@ def run_app():
             pla_path_input = Prompt.ask("[bold green]Enter path to the PLA submissions[/bold green]", console=console)
             sla_path_input = Prompt.ask("[bold green]Enter path to the SLA submissions[/bold green]", console=console)
             fsrn_path_input = Prompt.ask("[bold green]Enter path to the FSRN submissions[/bold green]", console=console)
-            cta_path_input = Prompt.ask("[bold green]Enter path to the CTA submissions/bold green]", console=console)
+            cta_path_input = Prompt.ask("[bold green]Enter path to the CTA submissions[/bold green]", console=console)
 
             results = handle_generate_batch_import(imu_dashboard_path_input, pla_path_input, sla_path_input,
                                                    fsrn_path_input,
