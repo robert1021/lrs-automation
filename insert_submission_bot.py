@@ -33,11 +33,13 @@ def enter_lrs_submission(file_number, file_status, file_name, file_from_date, fi
 if __name__ == '__main__':
     path = input("Enter path to excel file containing submission data: ")
     df = pd.read_excel(path)
+    total_files = len(df)
 
     titlebar = TitleBar()
     titlebar.click_icon()
 
-    for row in df.itertuples(name=None):
+    for i, row in enumerate(df.itertuples(name=None)):
+        print(f"Entering file {i + 1} of {total_files}")
         # Get column data
         lrs_file_number = str(row[2])
         lrs_file_status = str(row[8])
