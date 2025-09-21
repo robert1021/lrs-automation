@@ -13,6 +13,7 @@ from constants import PLA_SHEET, SLA_SHEET, FSRN_SHEET, CTA_SHEET
 from datetime import datetime
 import pandas as pd
 from batch_import import BatchImport
+from config import imu_dashboard_path
 
 
 def handle_generate_batch_import(imu_path: str, pla_path: str, sla_path: str, fsrn_path: str, cta_path: str) -> str:
@@ -185,14 +186,21 @@ def run_app():
         results = ""
 
         if tool_selection_input.lower() == LRSTools.GENERATE_BATCH_IMPORT.value.lower():
-            imu_dashboard_path_input = Prompt.ask("[bold green]Enter path to the IMU Dashboard[/bold green]",
-                                                  console=console).strip().strip('\'"')
+
+            file_name = os.path.basename(imu_dashboard_path)
+            # Get the current working directory as the destination
+            destination_folder = os.getcwd()
+            # Copy IMU Dashboard
+            shutil.copy2(imu_dashboard_path, destination_folder)
+
+            new_imu_dashboard_path = os.path.join(destination_folder, file_name)
+
             pla_path_input = Prompt.ask("[bold green]Enter path to the PLA submissions[/bold green]", console=console).strip().strip('\'"')
             sla_path_input = Prompt.ask("[bold green]Enter path to the SLA submissions[/bold green]", console=console).strip().strip('\'"')
             fsrn_path_input = Prompt.ask("[bold green]Enter path to the FSRN submissions[/bold green]", console=console).strip().strip('\'"')
             cta_path_input = Prompt.ask("[bold green]Enter path to the CTA submissions[/bold green]", console=console).strip().strip('\'"')
 
-            results = handle_generate_batch_import(imu_dashboard_path_input, pla_path_input, sla_path_input,
+            results = handle_generate_batch_import(new_imu_dashboard_path, pla_path_input, sla_path_input,
                                                    fsrn_path_input,
                                                    cta_path_input)
 

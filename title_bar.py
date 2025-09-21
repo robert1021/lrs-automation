@@ -7,7 +7,7 @@ from config import *
 class TitleBar:
 
     def __init__(self):
-        self.icon_img = os.path.join(titlebar_image_path, "lrs_icon.PNG")
+        self.icon_img = os.path.join(titlebar_image_path, "lrs_icon2.PNG")
 
     def click_icon(self):
         icon_coord = search_for_image(self.icon_img)
