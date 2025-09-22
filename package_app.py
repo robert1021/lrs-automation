@@ -28,6 +28,7 @@ if __name__ == "__main__":
             "--hidden-import=pandas",
             "--hidden-import=pyautogui",
             "--hidden-import=pydirectinput",
+            "--collect-data", "pandas",
             "main.py"
         ], text=True, check=True)
 

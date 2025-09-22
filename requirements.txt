@@ -2,8 +2,8 @@ PyAutoGUI==0.9.54
 PyScreeze==0.1.27
 PyDirectInput==1.0.4
 openpyxl==3.1.2
-pandas==2.1.4
+pandas
 opencv-python==4.10.0.84
-pyinstaller==6.2.0
+pyinstaller
 rich==13.9.2
 pillow==10.1.0
