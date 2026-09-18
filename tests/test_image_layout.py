@@ -60,6 +60,18 @@ class ImageLayoutTest(unittest.TestCase):
             self.assertNotIn("images;images", src, script)
             self.assertNotIn("images:images", src, script)
 
+    def test_gui_build_hides_console(self):
+        app_src = read("package_app.py")
+        self.assertTrue("--windowed" in app_src or "--noconsole" in app_src,
+                        "GUI exe must build without a console window")
+        # The standalone bots use input()/print(), so they must keep theirs.
+        for script in ("package_discontinuation_bot.py",
+                       "package_parent_bot.py", "package_submission_bot.py",
+                       "package_generate_batch_import.py"):
+            src = read(script)
+            self.assertNotIn("--windowed", src, script)
+            self.assertNotIn("--noconsole", src, script)
+
     def test_gui_replaces_tui(self):
         gui_src = read("gui.py")
         self.assertIn("tkinter", gui_src)

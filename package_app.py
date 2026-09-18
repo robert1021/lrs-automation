@@ -7,6 +7,8 @@ if __name__ == "__main__":
         process = subprocess.run([
             "pyinstaller",
             "--onefile",
+            # GUI app: no console window alongside the tkinter window.
+            "--windowed",
             # NOTE: images/ is intentionally NOT bundled. The exe expects an
             # external images/ folder next to it (see images/README.md).
             "--add-data", r"enums.py;.",
