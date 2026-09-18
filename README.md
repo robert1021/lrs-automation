@@ -1,13 +1,13 @@
 # LRS Automation
 
-This project is a Python-based Robotic Process Automation (RPA) tool designed to automate data entry tasks for the LRS (Legacy Review System). It provides a command-line interface to help users process and import data from Excel spreadsheets into the LRS application.
+This project is a Python-based Robotic Process Automation (RPA) tool designed to automate data entry tasks for the LRS (Legacy Review System). It provides a modern tkinter desktop GUI to help users process and import data from Excel spreadsheets into the LRS application.
 
 ## Features
 
 *   **Generate Batch Import:** Compares data from various source spreadsheets (PLA, SLA, FSRN, CTA) against a central IMU Dashboard report to identify new records that need to be created. It generates a summary Excel file for parent files and a batch import file for submission files.
 *   **Parent Files RPA:** Automates the creation of "Parent Files" in the LRS application. It reads data from a specified Excel file and uses GUI automation to enter the information.
 *   **Submission Files RPA:** Automates the creation of "Submission Files" in the LRS application, reading the necessary data from an Excel file and performing the data entry through GUI automation.
-*   **Interactive CLI:** A user-friendly command-line interface, built with `rich`, guides the user through the available tools and prompts for necessary inputs.
+*   **Modern GUI:** A tkinter desktop interface (sidebar navigation, file pickers, activity log, image health check) guides the user through the available tools.
 
 ## Dependencies
 
@@ -20,7 +20,6 @@ The project relies on the following Python libraries:
 *   pandas
 *   opencv-python
 *   pyinstaller
-*   rich
 *   pillow
 
 ## Installation
@@ -44,12 +43,12 @@ The project relies on the following Python libraries:
 
 ## Configuration
 
-The project uses a `config.py` file for configuration. The primary configuration is the path to the images used for GUI automation. The tool is pre-configured to work with the included `images` directory.
+Reference images are **not bundled into the exe**. They live in an external `images/` folder next to the executable (or next to `main.py` when running from source), split by dialog: `login/`, `menubar/`, `file_insert/`, `file_search/`, `file_status/`, `folder_tab/`, `title_bar/`. Capture your own screenshots at your resolution using the same file names — the GUI's **Images** page shows exactly which files are missing. See `images/README.md`.
 
 The `imu_dashboard_path` in `config.py` is hardcoded to a network drive:
 `N:\BLSS\HC6 Health Risk Protection\HC6-101 Regulatory Reporting\SMD\NHPD Dashboard\NNHPD Dashboard - IMU.xlsx`
 
-Ensure that you have access to this path or update it to the correct location of your `IMU.xlsx` file.
+It is only the default in the GUI's file picker — you can select any IMU workbook at runtime. Ensure that you have access to this path or update it to the correct location of your `IMU.xlsx` file.
 
 ## Usage
 
@@ -59,7 +58,7 @@ Run the application from the command line:
 python main.py
 ```
 
-The application will launch and present you with a menu of available tools.
+The application will launch the desktop GUI with a sidebar of available tools.
 
 ### 1. Generate Batch Import
 

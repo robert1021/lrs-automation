@@ -1,4 +1,3 @@
-import pyautogui
 import time
 import sys
 
@@ -21,6 +20,8 @@ def terminate_program(message: str):
 
 
 def search_for_image(image: str, confidence=0.9, grayscale=False, wait_time=3, times_to_search=20, quit_program=True):
+    import pyautogui
+
     search_count = 0
     print("Searching...")
     coord = pyautogui.locateCenterOnScreen(image, confidence=confidence, grayscale=grayscale)

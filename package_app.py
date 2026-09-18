@@ -7,7 +7,10 @@ if __name__ == "__main__":
         process = subprocess.run([
             "pyinstaller",
             "--onefile",
-            "--add-data", "images;images",
+            # GUI app: no console window alongside the tkinter window.
+            "--windowed",
+            # NOTE: images/ is intentionally NOT bundled. The exe expects an
+            # external images/ folder next to it (see images/README.md).
             "--add-data", r"enums.py;.",
             "--add-data", r"utilities.py;.",
             "--add-data", r"constants.py;.",

@@ -1,118 +1,99 @@
+"""LRS Automation: business logic plus the GUI entry point.
+
+The old ``rich`` text UI is gone; :func:`run_app` now launches the tkinter
+GUI from :mod:`gui`. The ``handle_*`` helpers below are reused by the GUI
+worker threads and stay importable for scripting.
+"""
+
 import os
-import openpyxl
-import shutil
 import time
+from datetime import datetime
+
+import pandas as pd
+
 from menu_bar import MenuBar
 from file_insert import FileInsert
 from title_bar import TitleBar
-from rich.console import Console
-from rich.prompt import Prompt
-from enums import *
+from enums import LRSTools
 from file_comparison import FileComparison
 from constants import PLA_SHEET, SLA_SHEET, FSRN_SHEET, CTA_SHEET
-from datetime import datetime
-import pandas as pd
 from batch_import import BatchImport
-from config import imu_dashboard_path
 
 
-def handle_generate_batch_import(imu_path: str, pla_path: str, sla_path: str, fsrn_path: str, cta_path: str) -> str:
-    # Compare LRS report to dashboard report
-    # PLA
-    pla_lrs_comparison = FileComparison(lrs_report_path=pla_path,
-                                        imu_dashboard_report_path=imu_path,
-                                        imu_dashboard_sheet=PLA_SHEET)
-    pla_lrs_comparison.get_files_to_create()
-    print("PLA LRS comparison complete")
+def _emit(on_log, message):
+    if on_log is not None:
+        on_log(message)
+    else:
+        print(message)
 
-    # SLA
-    sla_lrs_comparison = FileComparison(lrs_report_path=sla_path,
-                                        imu_dashboard_report_path=imu_path,
-                                        imu_dashboard_sheet=SLA_SHEET)
-    sla_lrs_comparison.get_files_to_create()
-    print("SLA LRS comparison complete")
 
-    # FSRN
-    fsrn_lrs_comparison = FileComparison(lrs_report_path=fsrn_path,
-                                         imu_dashboard_report_path=imu_path,
-                                         imu_dashboard_sheet=FSRN_SHEET)
-    fsrn_lrs_comparison.get_files_to_create()
-    print("FSRN LRS comparison complete")
+def _require_file(path: str, label: str) -> str:
+    cleaned = (path or "").strip().strip("'\"")
+    if not cleaned:
+        raise ValueError(f"{label}: no file selected.")
+    if not os.path.isfile(cleaned):
+        raise ValueError(f"{label}: file not found: {cleaned}")
+    return cleaned
 
-    # CTA
-    cta_lrs_comparison = FileComparison(lrs_report_path=cta_path,
-                                        imu_dashboard_report_path=imu_path,
-                                        imu_dashboard_sheet=CTA_SHEET)
-    cta_lrs_comparison.get_files_to_create()
-    print("CTA LRS comparison complete")
 
-    # Create output dir
-    if not os.path.isdir('Output'):
-        os.mkdir('Output')
+def handle_generate_batch_import(imu_path: str, pla_path: str, sla_path: str,
+                                 fsrn_path: str, cta_path: str,
+                                 on_log=None) -> str:
+    """Compare LRS reports to the IMU dashboard and build output workbooks."""
+    imu_path = _require_file(imu_path, "IMU Dashboard")
+    pla_path = _require_file(pla_path, "PLA submissions")
+    sla_path = _require_file(sla_path, "SLA submissions")
+    fsrn_path = _require_file(fsrn_path, "FSRN submissions")
+    cta_path = _require_file(cta_path, "CTA submissions")
 
-    parents_dfs = [pla_lrs_comparison.parent_files_to_create_df, sla_lrs_comparison.parent_files_to_create_df,
-                   fsrn_lrs_comparison.parent_files_to_create_df, cta_lrs_comparison.parent_files_to_create_df]
+    comparisons = []
+    for label, report_path, sheet in (
+        ("PLA", pla_path, PLA_SHEET),
+        ("SLA", sla_path, SLA_SHEET),
+        ("FSRN", fsrn_path, FSRN_SHEET),
+        ("CTA", cta_path, CTA_SHEET),
+    ):
+        comparison = FileComparison(lrs_report_path=report_path,
+                                    imu_dashboard_report_path=imu_path,
+                                    imu_dashboard_sheet=sheet)
+        comparison.get_files_to_create()
+        _emit(on_log, f"{label} LRS comparison complete")
+        comparisons.append(comparison)
 
+    os.makedirs("Output", exist_ok=True)
+
+    parents_dfs = [c.parent_files_to_create_df for c in comparisons]
     if not all(x is None for x in parents_dfs):
-        # Create parent files report - Files that need to be created in LRS
         parent_files_to_create_df = pd.concat(parents_dfs)
-
-        # Export parent files to create DF to excel file
         parent_filename = f"LRS-PAR-TO-CREATE-{datetime.today().strftime('%Y-%m-%d')}.xlsx"
-        parent_files_to_create_df.to_excel(
-            fr"Output\{parent_filename}",
-            sheet_name='PAR', index=False)
+        parent_full = os.path.join("Output", parent_filename)
+        parent_files_to_create_df.to_excel(parent_full, sheet_name="PAR", index=False)
+        _emit(on_log, f"Parent files report created: {parent_full}")
 
-        print("Parent files report created")
-
-    # Create batch import object
     batch_import_obj = BatchImport()
-
-    # Create report from template
     batch_import_obj.create_lrs_batch_import_report()
+    _emit(on_log, f"Batch import file created: {batch_import_obj.batch_import_path}")
 
-    print("Batch import file created")
-
-    # Add data to report
-
-    # PLA
-    if pla_lrs_comparison.files_submissions_to_create_df is not None:
-        batch_import_obj.add_to_report(pla_lrs_comparison.files_submissions_to_create_df)
-        print("PLA files added to batch import report")
-    else:
-        print("No PLA files to add to the batch import report")
-
-    # SLA
-    if sla_lrs_comparison.files_submissions_to_create_df is not None:
-
-        batch_import_obj.add_to_report(sla_lrs_comparison.files_submissions_to_create_df)
-        print("SLA files added to batch import report")
-    else:
-        print("No SLA files to add to the batch import report")
-
-    # FSRN
-    if fsrn_lrs_comparison.files_submissions_to_create_df is not None:
-        batch_import_obj.add_to_report(fsrn_lrs_comparison.files_submissions_to_create_df)
-        print("FSRN files added to batch import report")
-    else:
-        print("No FSRN files to add to the batch import report")
-
-    # CTA
-    if cta_lrs_comparison.files_submissions_to_create_df is not None:
-        batch_import_obj.add_to_report(cta_lrs_comparison.files_submissions_to_create_df)
-        print("CTA files added to batch import report")
-    else:
-        print("No CTA files to add to the batch import report")
+    for label, comparison in zip(("PLA", "SLA", "FSRN", "CTA"), comparisons):
+        if comparison.files_submissions_to_create_df is not None:
+            batch_import_obj.add_to_report(comparison.files_submissions_to_create_df)
+            _emit(on_log, f"{label} files added to batch import report")
+        else:
+            _emit(on_log, f"No {label} files to add to the batch import report")
 
     return "success"
 
 
-def handle_parent_files_rpa(file_path: str) -> str:
+def handle_parent_files_rpa(file_path: str, on_log=None) -> str:
+    """Drive the LRS File Insert dialog once per parent row."""
+    file_path = _require_file(file_path, "Parent file data")
     df = pd.read_excel(file_path)
+    total = len(df)
     titlebar = TitleBar()
     titlebar.click_icon()
 
-    for row in df.itertuples():
+    for i, row in enumerate(df.itertuples()):
+        _emit(on_log, f"Parent file {i + 1} of {total}")
         parent_number = str(row.lrs_par_number)
         company_name = str(row.company_name)
 
@@ -132,13 +113,16 @@ def handle_parent_files_rpa(file_path: str) -> str:
     return "success"
 
 
-def handle_submission_files_rpa(file_path) -> str:
+def handle_submission_files_rpa(file_path, on_log=None) -> str:
+    """Drive the LRS File Insert dialog once per submission row."""
+    file_path = _require_file(file_path, "Submission file data")
     df = pd.read_excel(file_path)
+    total = len(df)
     titlebar = TitleBar()
     titlebar.click_icon()
 
-    for row in df.itertuples(name=None):
-        # Get column data
+    for i, row in enumerate(df.itertuples(name=None)):
+        _emit(on_log, f"Submission file {i + 1} of {total}")
         file_number = str(row[2])
         file_status = str(row[8])
         file_name = str(row[10])
@@ -173,53 +157,15 @@ def handle_submission_files_rpa(file_path) -> str:
 
 
 def run_app():
-    console = Console()
-    console.print("LRS Automation Tool", style="bold green")
-    console.print(f"{'-' * 50}", style="bold blue")
+    """Launch the modern tkinter GUI."""
+    from gui import launch
+    launch()
 
-    while True:
 
-        tool_selection_input = Prompt.ask(prompt="[bold green]Which tool would you like to use?[/bold green]",
-                                          choices=LRSTools.get_values(), show_choices=True, case_sensitive=False,
-                                          console=console)
-
-        results = ""
-
-        if tool_selection_input.lower() == LRSTools.GENERATE_BATCH_IMPORT.value.lower():
-
-            file_name = os.path.basename(imu_dashboard_path)
-            # Get the current working directory as the destination
-            destination_folder = os.getcwd()
-            # Copy IMU Dashboard
-            shutil.copy2(imu_dashboard_path, destination_folder)
-
-            new_imu_dashboard_path = os.path.join(destination_folder, file_name)
-
-            pla_path_input = Prompt.ask("[bold green]Enter path to the PLA submissions[/bold green]", console=console).strip().strip('\'"')
-            sla_path_input = Prompt.ask("[bold green]Enter path to the SLA submissions[/bold green]", console=console).strip().strip('\'"')
-            fsrn_path_input = Prompt.ask("[bold green]Enter path to the FSRN submissions[/bold green]", console=console).strip().strip('\'"')
-            cta_path_input = Prompt.ask("[bold green]Enter path to the CTA submissions[/bold green]", console=console).strip().strip('\'"')
-
-            results = handle_generate_batch_import(new_imu_dashboard_path, pla_path_input, sla_path_input,
-                                                   fsrn_path_input,
-                                                   cta_path_input)
-
-        elif tool_selection_input.lower() == LRSTools.PARENT_FILES_RPA.value.lower():
-            file_path_input = Prompt.ask(
-                "[bold green]Enter path to the file containing parent file data[/bold green]", console=console).strip().strip('\'"')
-
-            results = handle_parent_files_rpa(file_path_input)
-
-        elif tool_selection_input.lower() == LRSTools.SUBMISSION_FILES_RPA.value.lower():
-            file_path_input = Prompt.ask(
-                "[bold green]Enter path to the file containing submission file data[/bold green]", console=console).strip().strip('\'"')
-
-            results = handle_submission_files_rpa(file_path_input)
-
-        console.print(f"{results}", style="bold green")
-        run_another_input = Prompt.ask(prompt="[bold blue]Would you like to run another tool?[/bold blue]",
-                                       choices=["Yes", "No"], show_choices=True, case_sensitive=False, console=console)
-
-        if run_another_input.lower() == "no":
-            console.print(f"Exiting...", style="bold red")
-            break
+__all__ = [
+    "LRSTools",
+    "handle_generate_batch_import",
+    "handle_parent_files_rpa",
+    "handle_submission_files_rpa",
+    "run_app",
+]

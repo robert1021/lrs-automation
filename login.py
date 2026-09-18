@@ -8,9 +8,9 @@ class Login:
     def __init__(self, username, password):
         self.username = username
         self.password = password
-        self.login_user_id_img = os.path.join(image_path, "login_user_id.PNG")
-        self.login_password_img = os.path.join(image_path, "login_password.PNG")
-        self.login_login_btn_img = os.path.join(image_path, "login_login_btn.PNG")
+        self.login_user_id_img = os.path.join(login_image_path, "login_user_id.PNG")
+        self.login_password_img = os.path.join(login_image_path, "login_password.PNG")
+        self.login_login_btn_img = os.path.join(login_image_path, "login_login_btn.PNG")
 
     def enter_user_id(self):
         user_id_coord = search_for_image(self.login_user_id_img)
