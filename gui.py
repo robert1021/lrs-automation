@@ -43,7 +43,7 @@ TITLE_FONT = (FONT_FAMILY, 18, "bold")
 SECTION_FONT = (FONT_FAMILY, 12, "bold")
 BODY_FONT = (FONT_FAMILY, 10)
 SMALL_FONT = (FONT_FAMILY, 9)
-SIDEBAR_FONT = (FONT_FAMILY, 11)
+SIDEBAR_FONT = (FONT_FAMILY, 10)
 
 NAV_ITEMS = (
     ("batch", "Generate\nBatch Import", "Compare LRS reports to the IMU dashboard."),
@@ -135,7 +135,7 @@ class LRSApp(tk.Tk):
         root = ttk.Frame(self)
         root.pack(fill="both", expand=True)
 
-        sidebar = ttk.Frame(root, style="Sidebar.TFrame", width=230)
+        sidebar = ttk.Frame(root, style="Sidebar.TFrame", width=264)
         sidebar.pack(side="left", fill="y")
         sidebar.pack_propagate(False)
 
