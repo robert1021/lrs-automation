@@ -67,6 +67,10 @@ class ImageLayoutTest(unittest.TestCase):
         self.assertIn("validate_images", gui_src)
         self.assertNotIn("from rich", gui_src)
         self.assertNotIn("import rich", gui_src)
+        # Pages region must scroll: long pages (Images) overflow small windows.
+        self.assertIn("scrollregion", gui_src)
+        self.assertIn("MouseWheel", gui_src)
+        self.assertIn("_on_mousewheel", gui_src)
         app_src = read("app.py")
         self.assertNotIn("from rich", app_src)
         self.assertNotIn("Prompt.ask", app_src)

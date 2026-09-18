@@ -160,8 +160,23 @@ class LRSApp(tk.Tk):
         main = ttk.Frame(root)
         main.pack(side="left", fill="both", expand=True)
 
-        self._content = ttk.Frame(main)
-        self._content.pack(fill="both", expand=True, padx=20, pady=(20, 10))
+        content_wrap = ttk.Frame(main)
+        content_wrap.pack(fill="both", expand=True, padx=20, pady=(20, 10))
+
+        self._canvas = tk.Canvas(content_wrap, bg=BG, highlightthickness=0)
+        content_scroll = ttk.Scrollbar(content_wrap, orient="vertical",
+                                       command=self._canvas.yview)
+        self._canvas.configure(yscrollcommand=content_scroll.set)
+        content_scroll.pack(side="right", fill="y")
+        self._canvas.pack(side="left", fill="both", expand=True)
+
+        self._content = ttk.Frame(self._canvas)
+        self._content_id = self._canvas.create_window((0, 0), window=self._content,
+                                                      anchor="nw")
+        self._content.bind("<Configure>",
+                           lambda e: self._canvas.configure(
+                               scrollregion=self._canvas.bbox("all")))
+        self._canvas.bind("<Configure>", self._on_canvas_configure)
 
         log_card = ttk.Frame(main, style="Card.TFrame", padding=14)
         log_card.pack(fill="both", expand=False, padx=20, pady=(0, 6))
@@ -172,7 +187,7 @@ class LRSApp(tk.Tk):
                    command=self._clear_log).pack(side="right")
         text_frame = ttk.Frame(log_card, style="Card.TFrame")
         text_frame.pack(fill="both", expand=True, pady=(8, 0))
-        self._log = tk.Text(text_frame, height=8, wrap="word", relief="flat",
+        self._log = tk.Text(text_frame, height=6, wrap="word", relief="flat",
                             bg=CARD, fg=TEXT, font=(FONT_FAMILY, 9),
                             highlightthickness=1, highlightbackground=BORDER,
                             state="disabled")
@@ -192,6 +207,7 @@ class LRSApp(tk.Tk):
         self._img_status_var = tk.StringVar(value="Checking images…")
         ttk.Label(status, textvariable=self._img_status_var, font=SMALL_FONT,
                   foreground=MUTED, background=BG).pack(side="right")
+        self._bind_global_mousewheel()
 
     def _card(self, parent) -> ttk.Frame:
         card = ttk.Frame(parent, style="Card.TFrame", padding=18)
@@ -221,6 +237,36 @@ class LRSApp(tk.Tk):
         self._pages[key].pack(fill="both", expand=True)
         for name, btn in self._nav_buttons.items():
             btn.configure(style="NavActive.TButton" if name == key else "Nav.TButton")
+        self._content.update_idletasks()
+        self._canvas.configure(scrollregion=self._canvas.bbox("all"))
+        self._canvas.yview_moveto(0)
+
+    # -- scrollable content ------------------------------------------
+    def _on_canvas_configure(self, event):
+        self._canvas.itemconfig(self._content_id, width=event.width)
+
+    def _bind_global_mousewheel(self):
+        self.bind_all("<MouseWheel>", self._on_mousewheel, add="+")
+        self.bind_all("<Button-4>", self._on_mousewheel, add="+")
+        self.bind_all("<Button-5>", self._on_mousewheel, add="+")
+
+    def _on_mousewheel(self, event):
+        node = event.widget
+        inside_pages = False
+        while node is not None:
+            if node is getattr(self, "_log", None):
+                return  # let the activity log scroll itself
+            if node is self._canvas:
+                inside_pages = True
+                break
+            node = getattr(node, "master", None)
+        if not inside_pages:
+            return
+        if getattr(event, "num", None) == 5 or event.delta < 0:
+            self._canvas.yview_scroll(1, "units")
+        elif getattr(event, "num", None) == 4 or event.delta > 0:
+            self._canvas.yview_scroll(-1, "units")
+        return "break"
 
     # -- pages -------------------------------------------------------
     def _build_batch_page(self):
