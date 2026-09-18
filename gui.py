@@ -178,9 +178,9 @@ class LRSApp(tk.Tk):
                                scrollregion=self._canvas.bbox("all")))
         self._canvas.bind("<Configure>", self._on_canvas_configure)
 
-        log_card = ttk.Frame(main, style="Card.TFrame", padding=14)
-        log_card.pack(fill="both", expand=False, padx=20, pady=(0, 6))
-        log_head = ttk.Frame(log_card, style="Card.TFrame")
+        self._log_card = ttk.Frame(main, style="Card.TFrame", padding=14)
+        self._log_card.pack(fill="both", expand=False, padx=20, pady=(0, 6))
+        log_head = ttk.Frame(self._log_card, style="Card.TFrame")
         log_head.pack(fill="x")
         ttk.Label(log_head, text="Activity log", style="Section.TLabel").pack(side="left")
         ttk.Button(log_head, text="Clear", style="Ghost.TButton",
@@ -199,13 +199,13 @@ class LRSApp(tk.Tk):
         self._log.tag_configure("success", foreground=SUCCESS)
         self._log.tag_configure("error", foreground=DANGER)
 
-        status = ttk.Frame(main, padding=(20, 0, 20, 12))
-        status.pack(fill="x")
+        self._status_frame = ttk.Frame(main, padding=(20, 0, 20, 12))
+        self._status_frame.pack(fill="x")
         self._status_var = tk.StringVar(value="Ready.")
-        ttk.Label(status, textvariable=self._status_var, font=SMALL_FONT,
+        ttk.Label(self._status_frame, textvariable=self._status_var, font=SMALL_FONT,
                   foreground=MUTED, background=BG).pack(side="left")
         self._img_status_var = tk.StringVar(value="Checking images…")
-        ttk.Label(status, textvariable=self._img_status_var, font=SMALL_FONT,
+        ttk.Label(self._status_frame, textvariable=self._img_status_var, font=SMALL_FONT,
                   foreground=MUTED, background=BG).pack(side="right")
         self._bind_global_mousewheel()
 
@@ -237,6 +237,11 @@ class LRSApp(tk.Tk):
         self._pages[key].pack(fill="both", expand=True)
         for name, btn in self._nav_buttons.items():
             btn.configure(style="NavActive.TButton" if name == key else "Nav.TButton")
+        if key == "images":
+            self._log_card.pack_forget()
+        else:
+            self._log_card.pack(fill="both", expand=False, padx=20, pady=(0, 6),
+                                before=self._status_frame)
         self._content.update_idletasks()
         self._canvas.configure(scrollregion=self._canvas.bbox("all"))
         self._canvas.yview_moveto(0)

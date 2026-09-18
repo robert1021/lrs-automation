@@ -71,6 +71,8 @@ class ImageLayoutTest(unittest.TestCase):
         self.assertIn("scrollregion", gui_src)
         self.assertIn("MouseWheel", gui_src)
         self.assertIn("_on_mousewheel", gui_src)
+        # Activity log is hidden on the Images page (not needed there).
+        self.assertIn("_log_card", gui_src)
         app_src = read("app.py")
         self.assertNotIn("from rich", app_src)
         self.assertNotIn("Prompt.ask", app_src)
