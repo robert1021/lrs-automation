@@ -8,7 +8,7 @@ if __name__ == "__main__":
         process = subprocess.run([
             "pyinstaller",
             "--onefile",
-            "--add-data", "images;images",
+            # NOTE: images/ is intentionally NOT bundled (external folder).
             "--add-data", r"utilities.py;.",
             "--add-data", r"constants.py;.",
             "--add-data", r"config.py;.",
