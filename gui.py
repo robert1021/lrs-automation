@@ -185,7 +185,7 @@ class LRSApp(tk.Tk):
         ttk.Label(log_head, text="Activity log", style="Section.TLabel").pack(side="left")
         ttk.Button(log_head, text="Clear", style="Ghost.TButton",
                    command=self._clear_log).pack(side="right")
-        text_frame = ttk.Frame(log_card, style="Card.TFrame")
+        text_frame = ttk.Frame(self._log_card, style="Card.TFrame")
         text_frame.pack(fill="both", expand=True, pady=(8, 0))
         self._log = tk.Text(text_frame, height=6, wrap="word", relief="flat",
                             bg=CARD, fg=TEXT, font=(FONT_FAMILY, 9),

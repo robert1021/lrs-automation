@@ -73,6 +73,10 @@ class ImageLayoutTest(unittest.TestCase):
         self.assertIn("_on_mousewheel", gui_src)
         # Activity log is hidden on the Images page (not needed there).
         self.assertIn("_log_card", gui_src)
+        # No stale bare references may remain after the rename: every
+        # log_card use must be the self._log_card attribute (a bare one
+        # raised NameError at startup).
+        self.assertNotRegex(gui_src, r"(?<![\w.])log_card")
         app_src = read("app.py")
         self.assertNotIn("from rich", app_src)
         self.assertNotIn("Prompt.ask", app_src)
